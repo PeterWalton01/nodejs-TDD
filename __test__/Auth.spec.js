@@ -26,6 +26,9 @@ const activeUser = { username: 'user1', email: 'user1@mail.com',
                      password: 'P4ssword', inactive: false,
 };
 
+const credentials = { email: 'user1@mail.com', password: 'P4ssword' };
+
+
 const addUser = async (user = {...activeUser}) => {
   const hash = await bcrypt.hash(user.password, 10);
   user.password = hash;
@@ -52,19 +55,13 @@ return await agent.send();
 describe('Authentication', () => {
   it('returns 200 when authentication details are valid', async () => {
     await addUser();
-    const response = await postAuthentication({
-      email: 'user1@mail.com',
-      password: 'P4ssword',
-    });
+    const response = await postAuthentication(credentials);
     expect(response.status).toBe(200);
   });
 
   it('returns a user id, username,token and image in response to a successful login', async () => {
     const user = await addUser();
-    const response = await postAuthentication({
-      email: 'user1@mail.com',
-      password: 'P4ssword',
-    });
+    const response = await postAuthentication(credentials);
     const body = response.body;
     expect(body.id).toBe(user.id);
     expect(body.username).toBe(user.username);
@@ -72,19 +69,13 @@ describe('Authentication', () => {
   });
 
   it('returns 401 when the user given does not exist', async () => {
-    const response = await postAuthentication({
-      email: 'user1@mail.com',
-      password: 'P4ssword',
-    });
+    const response = await postAuthentication(credentials);
     expect(response.status).toBe(401);
   });
 
   it('returns a proper error body when the logon fails', async () => {
     const nowInMili = new Date().getTime();
-    const response = await postAuthentication({
-      email: 'user1@mail.com',
-      password: 'P4ssword',
-    });
+    const response = await postAuthentication(credentials);
     const err = response.body;
     expect(err.path).toBe('/api/1.0/auth');
     expect(err.timestamp).toBeGreaterThan(nowInMili);
@@ -98,11 +89,7 @@ describe('Authentication', () => {
   `(
     'returns a $message when the login fails and the language is $language',
     async ({ language, message }) => {
-      const response = await postAuthentication(
-        {
-          email: 'user1@mail.com',
-          password: 'P4ssword',
-        },
+      const response = await postAuthentication(credentials,
         { language },
       );
       const err = response.body;
@@ -112,8 +99,7 @@ describe('Authentication', () => {
 
   it('returns 401 when the password is incorrect', async () => {
     await addUser();
-    const response = await postAuthentication({
-      email: 'user1@mail.com',
+    const response = await postAuthentication({...credentials,
       password: 'P4sswor',
     });
 
@@ -122,9 +108,8 @@ describe('Authentication', () => {
 
   it('returns 403 when logging in with an inactive account', async () => {
     await addUser({...activeUser, inactive: true});
-    const response = await postAuthentication({
+    const response = await postAuthentication({...credentials, 
       email: 'user1@mail.com',
-      password: 'P4ssword', 
     });
 
     expect(response.status).toBe(403);
@@ -133,10 +118,7 @@ describe('Authentication', () => {
   it('returns a proper error body when logging in with an inactive accoun', async () => {
     await addUser({...activeUser, inactive: true});
     const nowInMili = new Date().getTime();
-    const response = await postAuthentication({
-      email: 'user1@mail.com',
-      password: 'P4ssword',
-    });
+    const response = await postAuthentication(credentials);
     const err = response.body;
     expect(err.path).toBe('/api/1.0/auth');
     expect(err.timestamp).toBeGreaterThan(nowInMili);
@@ -150,11 +132,7 @@ describe('Authentication', () => {
 `(
   'returns a $message when the login fails and the language is $language',
   async ({ language, message }) => {
-    const response = await postAuthentication(
-      {
-        email: 'user1@mail.com',
-        password: 'P4ssword',
-      },
+    const response = await postAuthentication(credentials,
       { language },
     );
     const err = response.body;
@@ -170,7 +148,7 @@ describe('Authentication', () => {
     expect(response.status).toBe(401);
   });
 
-  it('returns 401 when the password os not valid', async () => {
+  it('returns 401 when the password is not valid', async () => {
     const response = await postAuthentication({
       email: 'user1@mail.com',
     });
@@ -181,10 +159,7 @@ describe('Authentication', () => {
   it('retruns a token in response body when credential are correct', 
     async () => {
       await addUser({...activeUser});
-      const response = await postAuthentication({
-        email: 'user1@mail.com',
-        password: 'P4ssword',
-      });
+      const response = await postAuthentication(credentials);
   
       expect(response.body.token).not.toBeUndefined();    
   });
@@ -202,7 +177,7 @@ describe('Logout', () => {
 
   it('returns token from the database during logout', async () => {
      await addUser();
-     const response = await postAuthentication({email: 'user1@mail.com', password: 'P4ssword'});
+     const response = await postAuthentication(credentials);
      const token = response.body.token;
      await postLogout({token: token});
      const storedToken = await Token.findOne({where: {token : token}});

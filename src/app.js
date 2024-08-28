@@ -2,6 +2,7 @@ const express = require('express');
 // var bodyParser = require('body-parser');
 const UserRouter = require('./user/UserRouter');
 const AuthenticationRouter = require('./auth/AuthenticationRouter');
+const HoaxRouter = require('./hoax/HoaxRouter');
 const i18next = require('i18next');
 const Backend = require('i18next-fs-backend');
 const middleware = require('i18next-http-middleware');
@@ -50,6 +51,7 @@ app.use(tokenAuthentication);
 
 app.use(UserRouter);
 app.use(AuthenticationRouter);
+app.use(HoaxRouter);
 
 // Error handler to come after routing
 app.use(ErrorHandler);

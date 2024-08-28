@@ -21,5 +21,8 @@
     "password_reset_request_success": "Athugaðu tölvupóstinn þinn til að endurstilla lykilorðið þitt",
     "unauthorised_password_reset": "Óheimil beiðni um endurstillingu lykilorðs",
     "profile_image_size": "Prófílmyndin þín má ekki vera stærri en 2mb",
-    "unsupported_file_type": "Aðeins JPG og PNG skrár eru leyfðar"
+    "unsupported_file_type": "Aðeins JPG og PNG skrár eru leyfðar",
+    "unauthorised_hoax_submit": "Gabb lagt fram án heimildar",
+    "hoax_submission_successful": "Gabb er vistað",
+    "hoax_content_size": "Gabb innihaldið verður að vera á milli 10 og 5000 stafir"
 }
