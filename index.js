@@ -4,6 +4,8 @@ const logger = require('./src/shared/logger');
 // const User = require('./src/user/User');
 // const bcrypt = require('bcrypt');
 const TokenService = require('./src/auth/TokenService');
+const FileService = require('./src/file/FileService');
+
 
 const port = process.env.PORT || 3000;
 
@@ -26,6 +28,7 @@ sequelize.sync();
 // });
 
 TokenService.scheduledCleanup();
+FileService.removeUnusedFileAttachments();
 
 app.listen(port, () => {
   logger.info(`app version ${process.env.npm_package_version} is running on http://localhost:${port}`);

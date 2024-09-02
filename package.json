@@ -9,7 +9,8 @@
     "test": "cross-env NODE_ENV=test jest --watch --verbose && cross-env NODE_ENV=test node test-cleanup",
     "lint": "eslint .",
     "test:staging": "cross-env NODE_ENV=staging npm run migrate &&  cross-env NODE_ENV=staging jest -all . --maxWorkers=1 && cross-env NODE_ENV=staging node test-cleanup",
-    "migrate": "sequelize-cli db:migrate"
+    "migrate": "sequelize-cli db:migrate",
+    "clean": "cross-env NODE_ENV=test node test-cleanup"
   },
   "author": "Peter Walton",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "i18next-fs-backend": "^2.3.1",
     "i18next-http-middleware": "^3.6.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.14",
     "nodemailer-stub": "^1.2.2",
     "sequelize": "^6.37.3",
@@ -50,6 +52,10 @@
     "testPathIgnorePatterns": [
       "<rootDir>/node_modules",
       "<rootDir>/config"
+    ],
+    "testSequencer": "<rootDir>/test-sequencer.js",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test-setup.js"
     ]
   }
 }

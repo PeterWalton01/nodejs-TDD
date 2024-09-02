@@ -12,9 +12,8 @@ const createToken = async (user) => {
       userid: userid,
       lastUsedAt: new Date(),
     });
-    // eslint-disable-next-line no-unused-vars
   } catch (err) {
-    // console.log('failed', user);
+    console.log(err.message);
   }
 
   return token;

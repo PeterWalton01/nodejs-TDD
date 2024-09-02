@@ -104,7 +104,11 @@ const updateUser = async (id, updateBody) => {
 };
 
 const deleteUser = async (id) => {
-  await User.destroy({ where: { id: id } });
+  const user = await User.findOne({ where: { id: id } });
+
+  await FileService.deleteUserFiles(user);
+
+  await user.destroy();
   // Replace by cascading delete
   // await TokenService.deleteTokensForUser(id);
 };
@@ -122,9 +126,6 @@ const passwordResetRequest = async (email) => {
   } catch(err) {
     throw new EmailException();
   }
-
-
-  
 };
 
 const updatePassword = async (updateRequest) => {

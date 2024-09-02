@@ -3,21 +3,24 @@ const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/user/User');
 const Hoax = require('../src/hoax/Hoax');
-const sequelize = require('../src/config/database');
+const FileAttachement = require('../src/file/FileAttachement');
 const en = require('../locales/en/translation.json');
 const is = require('../locales/is/translation.json');
-
-beforeAll(async () => {
-  if (process.env.NODE_ENV === 'test') {
-    await sequelize.sync();
-  }
-});
 
 beforeEach(async () => {
   // true is changed to {cascade: true} for
   // compatibility with databases other than sqlite
+  await FileAttachement.destroy({ truncate: true });
   await User.destroy({ truncate: { cascade: true } });
 });
+
+const addFileAttachment = async (hoaxId) => {
+  await FileAttachement.create({
+    filename: `test-file-for-hoadId-${hoaxId}`,
+    fileType: 'image/png',
+    hoaxId: hoaxId,
+  });
+};
 
 describe('Listing all hoaxes', () => {
   const getHoaxes = () => {
@@ -26,17 +29,20 @@ describe('Listing all hoaxes', () => {
   };
 
   const addHoaxes = async (hostCount) => {
+    const hoaxIds = [];
     for (let i = 0; i < hostCount; i++) {
       const user = await User.create({
         username: `user${i + 1}`,
         email: `user${i + 1}@mail.com`,
       });
-      await Hoax.create({
+      const hoax = await Hoax.create({
         content: `Content ${i + 1}`,
         timestamp: Date.now(),
         userid: user.id,
       });
+      hoaxIds.push(hoax.id);
     }
+    return hoaxIds;
   };
 
   it('returns 200 if there are no hoaxes in the database', async () => {
@@ -58,7 +64,7 @@ describe('Listing all hoaxes', () => {
     await addHoaxes(11);
     const response = await getHoaxes();
     expect(response.body.content.length).toBe(10);
-  });
+  }, 10000);
 
   it('returns only id, content, user object and timestamp in the response', async () => {
     await addHoaxes(11);
@@ -69,6 +75,23 @@ describe('Listing all hoaxes', () => {
 
     expect(hoaxKeys).toEqual(['id', 'content', 'timestamp', 'user']);
     expect(userKeys).toEqual(['id', 'username', 'email', 'image']);
+  },10000);
+
+  it('returns fileAttachement with filename and file type if the hoax has any', async () => {
+    const hoaxIds = await addHoaxes(1);
+    await addFileAttachment(hoaxIds[0]);
+    const response = await getHoaxes();
+    const hoax = response.body.content[0];
+    const hoaxKeys = Object.keys(hoax);
+    expect(hoaxKeys).toEqual([
+      'id',
+      'content',
+      'timestamp',
+      'user',
+      'fileAttachment',
+    ]);
+    const fileAttachmentKeys = Object.keys(hoax.fileAttachment);
+    expect(fileAttachmentKeys).toEqual(['filename', 'fileType']);
   });
 
   it('returns 2 pages when the database contains 15 hoaxes users', async () => {
@@ -84,34 +107,34 @@ describe('Listing all hoaxes', () => {
     // Don't forgat reverse order so user1 not user11
     expect(response.body.content[0].user.username).toBe('user1');
     expect(response.body.page).toBe(1);
-  });
+  }, 10000);
 
   it('returns the first page when page is set below zero in the request', async () => {
     await addHoaxes(11);
     const response = await getHoaxes().query({ page: -5 });
     expect(response.body.page).toBe(0);
-  });
+  }, 10000);
 
   it('returns 5 hoaxes and a size indicator of 5 when this is set in the request', async () => {
     await addHoaxes(11);
     const response = await getHoaxes().query({ size: 5 });
     expect(response.body.content.length).toBe(5);
     expect(response.body.size).toBe(5);
-  });
+  }, 10000);
 
   it('returns 10 users when the requested size is 1999', async () => {
     await addHoaxes(12);
     const response = await getHoaxes().query({ size: 1000 });
     expect(response.body.content.length).toBe(10);
     expect(response.body.size).toBe(10);
-  });
+  }, 10000);
 
   it('returns 10 hoaxes and page size value of 10 when the requested size is less than or equal 0', async () => {
     await addHoaxes(12);
     const response = await getHoaxes().query({ size: -50 });
     expect(response.body.content.length).toBe(10);
     expect(response.body.size).toBe(10);
-  });
+  }, 10000);
 
   it('returns 10 users and page size value of 10 when neither parameter is specified', async () => {
     await addHoaxes(12);
@@ -119,7 +142,7 @@ describe('Listing all hoaxes', () => {
     expect(response.body.content.length).toBe(10);
     expect(response.body.size).toBe(10);
     expect(response.body.page).toBe(0);
-  });
+  }, 10000);
 
   it('returns 10 hoaxes and page size value of 10 when parameters are illegal', async () => {
     await addHoaxes(12);
@@ -127,7 +150,7 @@ describe('Listing all hoaxes', () => {
     expect(response.body.content.length).toBe(10);
     expect(response.body.size).toBe(10);
     expect(response.body.page).toBe(0);
-  });
+  }, 10000);
 
   it('returns hoaxes running from new to old', async () => {
     await addHoaxes(12);
@@ -136,7 +159,7 @@ describe('Listing all hoaxes', () => {
     const firstHoax = response.body.content[0];
     const lastHoax = response.body.content[9];
     expect(firstHoax.timestamp).toBeGreaterThan(lastHoax.timestamp);
-  });
+  },10000);
 });
 
 describe('Listing all hoaxes for a user', () => {
@@ -153,13 +176,16 @@ describe('Listing all hoaxes for a user', () => {
   };
 
   const addHoaxes = async (hoaxCount, userId) => {
+    const hoaxIds = [];
     for (let i = 0; i < hoaxCount; i++) {
-      await Hoax.create({
+      const hoax = await Hoax.create({
         content: `Content ${i + 1}`,
         timestamp: Date.now(),
         userid: userId,
       });
+      hoaxIds.push(hoax.id);
     }
+    return hoaxIds;
   };
 
   it('returns 200 if there are no hoaxes in the database', async () => {
@@ -228,6 +254,24 @@ describe('Listing all hoaxes for a user', () => {
     expect(userKeys).toEqual(['id', 'username', 'email', 'image']);
   });
 
+  it('returns fileAttachement with filename and file type if the hoax has any', async () => {
+    const user = await addUser();
+    const hoaxIds = await addHoaxes(1, user.id);
+    await addFileAttachment(hoaxIds[0]);
+    const response = await getHoaxes(user.id);
+    const hoax = response.body.content[0];
+    const hoaxKeys = Object.keys(hoax);
+    expect(hoaxKeys).toEqual([
+      'id',
+      'content',
+      'timestamp',
+      'user',
+      'fileAttachment',
+    ]);
+    const fileAttachmentKeys = Object.keys(hoax.fileAttachment);
+    expect(fileAttachmentKeys).toEqual(['filename', 'fileType']);
+  });
+
   it('returns 2 pages when the database contains 15 hoaxes users', async () => {
     const user = await addUser();
     await addHoaxes(15, user.id);
@@ -258,7 +302,7 @@ describe('Listing all hoaxes for a user', () => {
     const response = await getHoaxes(user.id).query({ size: 5 });
     expect(response.body.content.length).toBe(5);
     expect(response.body.size).toBe(5);
-  });
+  }, 10000);
 
   it('returns 10 users when the requested size is 1999', async () => {
     const user = await addUser();

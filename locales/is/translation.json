@@ -24,5 +24,7 @@
     "unsupported_file_type": "Aðeins JPG og PNG skrár eru leyfðar",
     "unauthorised_hoax_submit": "Gabb lagt fram án heimildar",
     "hoax_submission_successful": "Gabb er vistað",
-    "hoax_content_size": "Gabb innihaldið verður að vera á milli 10 og 5000 stafir"
+    "hoax_content_size": "Gabb innihaldið verður að vera á milli 10 og 5000 stafir",
+    "attachment_size_limit": "Upphlaðnar skrár mega ekki vera stærri en 5MB",
+    "unautorised_hoax_delete": "Þú hefur ekki heimild til að eyða þessu gabbi"
 }

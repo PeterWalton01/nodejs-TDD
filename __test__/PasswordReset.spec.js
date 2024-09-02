@@ -3,7 +3,6 @@ const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/user/User');
 const Token = require('../src/auth/Token');
-const sequelize = require('../src/config/database');
 const SMTPServer = require('smtp-server').SMTPServer;
 const en = require('../locales/en/translation.json');
 const is = require('../locales/is/translation.json');
@@ -36,9 +35,6 @@ beforeAll(async () => {
     await server.listen(config.mail.port, 'localhost');
   } catch (err) {
     throw new Error(err);
-  }
-  if(process.env.NODE_ENV === 'test') {
-    await sequelize.sync();
   }
 });
 

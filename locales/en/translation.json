@@ -24,5 +24,7 @@
     "unsupported_file_type": "Only JPG and PNG files are allowed",
     "unauthorised_hoax_submit": "Hoax submitted without authorisation",
     "hoax_submission_successful": "Hoax is saved",
-    "hoax_content_size": "The hoax content must be between 10 and 5000 characters"
+    "hoax_content_size": "The hoax content must be between 10 and 5000 characters",
+    "attachment_size_limit": "Uploaded files cannot be larger than 5MB",
+    "unautorised_hoax_delete": "You are not authorised to delete this hoax"
 }

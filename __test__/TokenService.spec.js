@@ -1,13 +1,7 @@
 /* eslint-disable no-undef */
 const Token = require('../src/auth/Token');
 const TokenService = require('../src/auth/TokenService');
-const sequelize = require('../src/config/database');
 
-beforeAll(async () => {
-  if(process.env.NODE_ENV === 'test') {
-    await sequelize.sync();
-  }
-});
 
 beforeEach(async () => {
   // true is changed to {cascade: true} for 

@@ -2,7 +2,6 @@
 const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/user/User');
-const sequelize = require('../src/config/database');
 // const nodemailerStub = require('nodemailer-stub');
 // const EmailService = require('../src/email/EmailService');
 const SMTPServer = require('smtp-server').SMTPServer;
@@ -36,9 +35,6 @@ beforeAll(async () => {
     await server.listen(config.mail.port, 'localhost');
   } catch (err) {
     throw new Error(err);
-  }
-  if(process.env.NODE_ENV === 'test') {
-    await sequelize.sync();
   }
 });
 
